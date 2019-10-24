@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: create admin group and user
+Description: Create admin group and user
 Parameters:
   GroupName:
     Type: String
@@ -39,7 +39,6 @@ Resources:
         - !Ref User
 
 Outputs:
-
   UserPassword:
     Description: User password
     Value: !Sub ${UserPassword}
