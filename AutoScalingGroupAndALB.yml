@@ -497,13 +497,10 @@ Resources:
       MaxSize: 3
       TargetGroupARNs:
         - !Ref TargetGroup
-      # NotificationConfiguration:
-      #   TopicARN: !Ref NotificationTopic
-      #   NotificationTypes:
-      #     - autoscaling:EC2_INSTANCE_LAUNCH
-      #     - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
-      #     - autoscaling:EC2_INSTANCE_TERMINATE
-      #     - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+      # NotificationConfigurations:
+      #   - TopicARN: !Ref 'NotificationTopic'
+      #     NotificationTypes: ['autoscaling:EC2_INSTANCE_LAUNCH', 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR',
+      #       'autoscaling:EC2_INSTANCE_TERMINATE', 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR']
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -514,7 +511,6 @@ Resources:
         MaxBatchSize: 1
         PauseTime: PT15M
         WaitOnResourceSignals: true
-
 
   # 起動設定
   LaunchConfig:
@@ -529,11 +525,12 @@ Resources:
           files:
             /var/www/html/index.html:
               content: !Join ['
-
-                  ', [<img src=", !FindInMap [Region2Examples, !Ref 'AWS::Region',
-                    Examples], /cloudformation_graphic.png" alt="AWS CloudFormation
-                    Logo"/>, '<h1>Congratulations, you have successfully launched
+                  ', [<h1>Congratulations, you have successfully launched
                     the AWS CloudFormation sample.</h1>']]
+                  # ', [<img src=", !FindInMap [Region2Examples, !Ref 'AWS::Region',
+                  #   Examples], /cloudformation_graphic.png" alt="AWS CloudFormation
+                  #   Logo"/>, '<h1>Congratulations, you have successfully launched
+                  #   the AWS CloudFormation sample.</h1>']]
               mode: '000644'
               owner: root
               group: root

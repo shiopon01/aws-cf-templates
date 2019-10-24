@@ -210,7 +210,10 @@ Resources:
         - Key: Name
           Value: !Sub ${ProjectName}-db-route-2
 
+
   # Public Routing (to Internet)
+
+  # TODO: write
 
   PublicRouteA:
     Type: AWS::EC2::Route
@@ -226,7 +229,12 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
-  # Public RouteTable Associate
+  # Private Routing
+
+  # TODO: write
+
+
+  # Public RouteTable Associate (Connect Subnet)
 
   PublicELBSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -240,7 +248,7 @@ Resources:
       SubnetId: !Ref PublicELBSubnet2
       RouteTableId: !Ref PublicELBRouteTable2
 
-  # Private RouteTable Associate
+  # Private RouteTable Associate (Connect Subnet)
 
   WebSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
