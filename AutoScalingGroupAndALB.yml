@@ -414,6 +414,17 @@ Resources:
   ###
   # security group
 
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access and HTTP from the load balancer only
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
+
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -426,22 +437,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Select
-            - 0
-            - !GetAtt
-              - ApplicationLoadBalancer
-              - SecurityGroups
-      VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
-
-  LoadBalancerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Enable SSH access and HTTP from the load balancer only
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
       VpcId: { "Fn::ImportValue": !Sub "${ProjectName}-vpc" }
 
   #####
@@ -465,8 +461,8 @@ Resources:
     Properties:
       Name: !Sub ${ProjectName}-loadbalancer
       Subnets:
-        - { "Fn::ImportValue": !Sub "${ProjectName}-public-elb-subnet-1" }
-        - { "Fn::ImportValue": !Sub "${ProjectName}-public-elb-subnet-2" }
+        - { "Fn::ImportValue": !Sub "${ProjectName}-public-web-subnet-1" }
+        - { "Fn::ImportValue": !Sub "${ProjectName}-public-web-subnet-2" }
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
 
@@ -490,8 +486,8 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       VPCZoneIdentifier:
-        - { "Fn::ImportValue": !Sub "${ProjectName}-public-elb-subnet-1" }
-        - { "Fn::ImportValue": !Sub "${ProjectName}-public-elb-subnet-2" }
+        - { "Fn::ImportValue": !Sub "${ProjectName}-public-web-subnet-1" }
+        - { "Fn::ImportValue": !Sub "${ProjectName}-public-web-subnet-2" }
       LaunchConfigurationName: !Ref LaunchConfig
       MinSize: 1
       MaxSize: 3
@@ -568,6 +564,7 @@ Resources:
                 ensureRunning: true
                 files: [/etc/cfn/cfn-hup.conf, /etc/cfn/hooks.d/cfn-auto-reloader.conf]
     Properties:
+      AssociatePublicIpAddress: true # インスタンスにパブリックIPを割り当てる
       KeyName: !Ref 'KeyName'
       ImageId: !FindInMap [AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [AWSInstanceType2Arch,
           !Ref 'InstanceType', Arch]]
