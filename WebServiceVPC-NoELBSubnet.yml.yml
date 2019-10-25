@@ -12,23 +12,17 @@ Metadata:
           default: Network Configuration
         Parameters:
           - VPCCidr
-          - PublicELBSubnet1Cidr
-          - PublicELBSubnet2Cidr
-          - WebSubnet1Cidr
-          - WebSubnet2Cidr
+          - PublicWebSubnet1Cidr
+          - PublicWebSubnet2Cidr
           - DBSubnet1Cidr
           - DBSubnet2Cidr
     ParameterLabels:
       VPCCidr:
         default: VPC Cidr
-      PublicELBSubnet1Cidr:
-        default: PublicELBSubnet1 Cidr
-      PublicELBSubnet2Cidr:
-        default: PublicELBSubnet2 Cidr
-      WebSubnet1Cidr:
-        default: WebSubnet1 Cidr
-      WebSubnet2Cidr:
-        default: WebSubnet2 Cidr
+      PublicWebSubnet1Cidr:
+        default: PublicWebSubnet1 Cidr
+      PublicWebSubnet2Cidr:
+        default: PublicWebSubnet2 Cidr
       DBSubnet1Cidr:
         default: DBSubnet1 Cidr
       DBSubnet2Cidr:
@@ -42,29 +36,21 @@ Parameters:
     Type: String
     Default: 10.0.0.0/16
 
-  PublicELBSubnet1Cidr:
+  PublicWebSubnet1Cidr:
     Type: String
     Default: 10.0.1.0/24
 
-  PublicELBSubnet2Cidr:
+  PublicWebSubnet2Cidr:
     Type: String
     Default: 10.0.2.0/24
 
-  WebSubnet1Cidr:
+  DBSubnet1Cidr:
     Type: String
     Default: 10.0.11.0/24
 
-  WebSubnet2Cidr:
-    Type: String
-    Default: 10.0.12.0/24
-
-  DBSubnet1Cidr:
-    Type: String
-    Default: 10.0.21.0/24
-
   DBSubnet2Cidr:
     Type: String
-    Default: 10.0.22.0/24
+    Default: 10.0.12.0/24
 
 Resources:
   # VPC
@@ -92,49 +78,27 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPC
 
-  # Public ELB Subnets
+  # Public Web Subnets
 
-  PublicELBSubnet1:
+  PublicWebSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-northeast-1a
-      CidrBlock: !Ref PublicELBSubnet1Cidr
+      CidrBlock: !Ref PublicWebSubnet1Cidr
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-subnet-1
+          Value: !Sub ${ProjectName}-public-web-subnet-1
 
-  PublicELBSubnet2:
+  PublicWebSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-northeast-1c
-      CidrBlock: !Ref PublicELBSubnet2Cidr
+      CidrBlock: !Ref PublicWebSubnet2Cidr
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-subnet-2
-
-  # Private Web Subnets
-
-  WebSubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: ap-northeast-1a
-      CidrBlock: !Ref WebSubnet1Cidr
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-web-subnet-1
-
-  WebSubnet2:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: ap-northeast-1c
-      CidrBlock: !Ref WebSubnet2Cidr
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-web-subnet-2
+          Value: !Sub ${ProjectName}-public-web-subnet-2
 
   # Private DB Subnets
 
@@ -160,39 +124,23 @@ Resources:
 
   # Public RouteTables
 
-  PublicELBRouteTable1:
+  PublicWebRouteTable1:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-route-a
+          Value: !Sub ${ProjectName}-public-web-route-1
 
-  PublicELBRouteTable2:
+  PublicWebRouteTable2:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-route-c
+          Value: !Sub ${ProjectName}-public-web-route-2
 
   # Private RouteTables
-
-  WebRouteTable1:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-web-route-1
-
-  WebRouteTable2:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-web-route-2
 
   DBRouteTable1:
     Type: AWS::EC2::RouteTable
@@ -212,17 +160,17 @@ Resources:
 
   # Public Routing (to Internet)
 
-  PublicELBRouteIGW1:
+  PublicWebRouteIGW1:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref PublicELBRouteTable1
+      RouteTableId: !Ref PublicWebRouteTable1
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
-  PublicELBRouteIGW2:
+  PublicWebRouteIGW2:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref PublicELBRouteTable2
+      RouteTableId: !Ref PublicWebRouteTable2
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
@@ -231,31 +179,19 @@ Resources:
 
   # Public RouteTable Associate (Connect Subnet)
 
-  PublicELBSubnet1RouteTableAssociation:
+  PublicWebSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicELBSubnet1
-      RouteTableId: !Ref PublicELBRouteTable1
+      SubnetId: !Ref PublicWebSubnet1
+      RouteTableId: !Ref PublicWebRouteTable1
 
-  PublicELBSubnet2RouteTableAssociation:
+  PublicWebSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicELBSubnet2
-      RouteTableId: !Ref PublicELBRouteTable2
+      SubnetId: !Ref PublicWebSubnet2
+      RouteTableId: !Ref PublicWebRouteTable2
 
   # Private RouteTable Associate (Connect Subnet)
-
-  WebSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref WebSubnet1
-      RouteTableId: !Ref WebRouteTable1
-
-  WebSubnet2RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref WebSubnet2
-      RouteTableId: !Ref WebRouteTable2
 
   DBSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -282,47 +218,25 @@ Outputs:
       Name: !Sub ${ProjectName}-vpc-cidr
 
   # Subnet
-  PublicELBSubnet1:
-    Value: !Ref PublicELBSubnet1
+  PublicWebSubnet1:
+    Value: !Ref PublicWebSubnet1
     Export:
-      Name: !Sub ${ProjectName}-public-elb-subnet-1
+      Name: !Sub ${ProjectName}-public-web-subnet-1
 
-  PublicELBSubnet1Cidr:
-    Value: !Ref PublicELBSubnet1Cidr
+  PublicWebSubnet1Cidr:
+    Value: !Ref PublicWebSubnet1Cidr
     Export:
-      Name: !Sub ${ProjectName}-public-elb-subnet-1-cidr
+      Name: !Sub ${ProjectName}-public-web-subnet-1-cidr
 
-  PublicELBSubnet2:
-    Value: !Ref PublicELBSubnet2
+  PublicWebSubnet2:
+    Value: !Ref PublicWebSubnet2
     Export:
-      Name: !Sub ${ProjectName}-public-elb-subnet-2
+      Name: !Sub ${ProjectName}-public-web-subnet-2
 
-  PublicELBSubnet2Cidr:
-    Value: !Ref PublicELBSubnet2Cidr
+  PublicWebSubnet2Cidr:
+    Value: !Ref PublicWebSubnet2Cidr
     Export:
-      Name: !Sub ${ProjectName}-public-elb-subnet-2-cidr
-
-  # web
-
-  WebSubnet1:
-    Value: !Ref WebSubnet1
-    Export:
-      Name: !Sub ${ProjectName}-web-subnet-1
-
-  WebSubnet1Cidr:
-    Value: !Ref WebSubnet1Cidr
-    Export:
-      Name: !Sub ${ProjectName}-web-subnet-1-cidr
-
-  WebSubnet2:
-    Value: !Ref WebSubnet2
-    Export:
-      Name: !Sub ${ProjectName}-web-subnet-2
-
-  WebSubnet2Cidr:
-    Value: !Ref WebSubnet2Cidr
-    Export:
-      Name: !Sub ${ProjectName}-web-subnet-2-cidr
+      Name: !Sub ${ProjectName}-public-web-subnet-2-cidr
 
   # db
 
@@ -348,25 +262,15 @@ Outputs:
 
   # Route
 
-  PublicELBRouteTable1:
-    Value: !Ref PublicELBRouteTable1
+  PublicWebRouteTable1:
+    Value: !Ref PublicWebRouteTable1
     Export:
-      Name: !Sub ${ProjectName}-public-elb-route-1
+      Name: !Sub ${ProjectName}-public-web-route-1
 
-  PublicELBRouteTable2:
-    Value: !Ref PublicELBRouteTable2
+  PublicWebRouteTable2:
+    Value: !Ref PublicWebRouteTable2
     Export:
-      Name: !Sub ${ProjectName}-public-elb-route-2
-
-  WebRouteTable1:
-    Value: !Ref WebRouteTable1
-    Export:
-      Name: !Sub ${ProjectName}-web-route-1
-
-  WebRouteTable2:
-    Value: !Ref WebRouteTable2
-    Export:
-      Name: !Sub ${ProjectName}-web-route-2
+      Name: !Sub ${ProjectName}-public-web-route-2
 
   DBRouteTable1:
     Value: !Ref DBRouteTable1
