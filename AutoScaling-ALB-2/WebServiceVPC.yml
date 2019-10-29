@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: VPC and Subnet Create
+Description: VPC and Subnet Create 2
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -26,7 +26,7 @@ Metadata:
       PublicELBSubnet2Cidr:
         default: PublicELBSubnet2 Cidr
       WebSubnet1Cidr:
-        default: WebSubnet1 Cidr
+        default: WebSubnet2 Cidr
       WebSubnet2Cidr:
         default: WebSubnet2 Cidr
       DBSubnet1Cidr:
@@ -37,31 +37,24 @@ Metadata:
 Parameters:
   ProjectName:
     Type: String
-
   VPCCidr:
     Type: String
     Default: 10.0.0.0/16
-
   PublicELBSubnet1Cidr:
     Type: String
     Default: 10.0.1.0/24
-
   PublicELBSubnet2Cidr:
     Type: String
     Default: 10.0.2.0/24
-
   WebSubnet1Cidr:
     Type: String
     Default: 10.0.11.0/24
-
   WebSubnet2Cidr:
     Type: String
     Default: 10.0.12.0/24
-
   DBSubnet1Cidr:
     Type: String
     Default: 10.0.21.0/24
-
   DBSubnet2Cidr:
     Type: String
     Default: 10.0.22.0/24
@@ -92,7 +85,7 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPC
 
-  # Public ELB Subnets
+  # Public Web Subnets
 
   PublicELBSubnet1:
     Type: AWS::EC2::Subnet
@@ -102,7 +95,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-subnet-1
+          Value: !Sub ${ProjectName}-public-web-subnet-1
 
   PublicELBSubnet2:
     Type: AWS::EC2::Subnet
@@ -112,7 +105,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-subnet-2
+          Value: !Sub ${ProjectName}-public-web-subnet-2
 
   # Private Web Subnets
 
@@ -166,7 +159,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-route-a
+          Value: !Sub ${ProjectName}-public-elb-route-1
 
   PublicELBRouteTable2:
     Type: AWS::EC2::RouteTable
@@ -174,25 +167,9 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectName}-public-elb-route-c
+          Value: !Sub ${ProjectName}-public-elb-route-2
 
   # Private RouteTables
-
-  WebRouteTable1:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-web-route-1
-
-  WebRouteTable2:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectName}-web-route-2
 
   DBRouteTable1:
     Type: AWS::EC2::RouteTable
@@ -245,18 +222,6 @@ Resources:
 
   # Private RouteTable Associate (Connect Subnet)
 
-  WebSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref WebSubnet1
-      RouteTableId: !Ref WebRouteTable1
-
-  WebSubnet2RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref WebSubnet2
-      RouteTableId: !Ref WebRouteTable2
-
   DBSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -303,7 +268,6 @@ Outputs:
       Name: !Sub ${ProjectName}-public-elb-subnet-2-cidr
 
   # web
-
   WebSubnet1:
     Value: !Ref WebSubnet1
     Export:
@@ -325,7 +289,6 @@ Outputs:
       Name: !Sub ${ProjectName}-web-subnet-2-cidr
 
   # db
-
   DBSubnet1:
     Value: !Ref DBSubnet1
     Export:
